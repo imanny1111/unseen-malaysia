@@ -7,6 +7,14 @@
   <meta name="description" content="Mark the districts of Malaysia you have visited and download your own travel map as PNG, JPG or PDF.">
   <meta property="og:title" content="Unseen Malaysia — How much of Malaysia have you seen?">
   <meta property="og:description" content="Pick the 160 districts you've visited and download your personal Malaysia travel map.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://unseen-malaysia-map.pages.dev/">
+  <meta property="og:image" content="https://unseen-malaysia-map.pages.dev/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="A Malaysia map with visited districts highlighted">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://unseen-malaysia-map.pages.dev/">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23134e3a'/%3E%3Cpath d='M9 22V10l7 7 7-7v12' stroke='%23f4c430' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -26,11 +34,11 @@
     <div class="hero-inner">
       <span class="pill" data-i18n="heroPill">16 states &amp; territories · 160 districts</span>
       <h1 data-i18n-html="heroTitle">How much of <em>Malaysia</em> have you seen?</h1>
-      <p data-i18n="heroText">Tick the districts you've been to, pick a theme, and download a beautiful map of your travels.</p>
-      <a class="btn btn-light" href="#map" data-i18n="heroCta">Start picking districts ↓</a>
+      <p data-i18n="heroText">Tick the towns and places you've been to, pick a theme, and download a beautiful map of your travels.</p>
+      <a class="btn btn-light" href="#map" data-i18n="heroCta">Start your map ↓</a>
       <br><p class="visitors" id="visitors" hidden><i></i><span id="visitorsText"></span></p>
       <ol class="steps">
-        <li><span>1</span><b data-i18n="step1">Pick districts</b></li>
+        <li><span>1</span><b data-i18n="step1">Tick places</b></li>
         <li><span>2</span><b data-i18n="step2">Choose a theme</b></li>
         <li><span>3</span><b data-i18n="step3">Download PNG, JPG or PDF</b></li>
       </ol>
@@ -40,10 +48,10 @@
   <main id="map" class="workspace">
     <aside class="panel picker">
       <div class="panel-head">
-        <h2 data-i18n="pickerTitle">Districts I've visited</h2>
+        <h2 data-i18n="pickerTitle">Places I've been</h2>
         <span class="badge" id="pickerCount">0 / 160</span>
       </div>
-      <input id="search" class="search" type="search" autocomplete="off" data-i18n-placeholder="search" placeholder="Search districts…">
+      <input id="search" class="search" type="search" autocomplete="off" data-i18n-placeholder="search" placeholder="Search a town or place…">
       <div class="bulk">
         <button type="button" class="link" id="selectAll" data-i18n="selectAll">Select all</button>
         <button type="button" class="link" id="clearAll" data-i18n="clearAll">Clear all</button>
@@ -61,7 +69,7 @@
           </label>
           <button type="button" class="link" id="removePhoto" hidden data-i18n="removePhoto">Remove</button>
           <input id="name" class="text-input" type="text" maxlength="40" data-i18n-placeholder="namePh" placeholder="Your name (optional)">
-          <label class="check"><input type="checkbox" id="labels" checked> <span data-i18n="showNames">District names</span></label>
+          <label class="check"><input type="checkbox" id="labels" checked> <span data-i18n="showNames">Place names</span></label>
         </div>
       </div>
 
@@ -86,6 +94,7 @@
           </div>
           <div class="foot-row brand-row">
             <span class="brand small"><span class="brand-mark">M</span> Unseen Malaysia</span>
+            <span class="site-url"><span data-i18n="makeYours">Make yours at</span> <b>unseen-malaysia-map.pages.dev</b></span>
           </div>
         </div>
         <div id="tooltip" class="tooltip" hidden></div>
@@ -98,6 +107,7 @@
           <button type="button" class="btn" data-export="png">↓ PNG</button>
           <button type="button" class="btn" data-export="jpg">↓ JPG</button>
           <button type="button" class="btn" data-export="pdf">↓ PDF</button>
+          <button type="button" class="btn btn-share" id="share" data-i18n="share">Share</button>
         </div>
       </div>
     </section>
@@ -134,6 +144,7 @@
   </footer>
 
   <script src="js/map-data.js"></script>
+  <script src="js/places.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/export.js"></script>
   <script src="js/app.js"></script>

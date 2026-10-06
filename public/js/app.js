@@ -2,6 +2,15 @@
   const DATA = window.MAP_DATA;
   const TOTAL = DATA.districts.length;
   const STORE = 'unseen-my:v1';
+  // Printed on exported maps and used for sharing. Change this if you add a custom domain.
+  const SITE_URL = 'https://unseen-malaysia-map.pages.dev';
+
+  // Show the town people know (e.g. "Ipoh") instead of the official district ("Kinta").
+  for (const d of DATA.districts) {
+    d.places = (window.PLACES && window.PLACES[d.name]) || [d.name];
+    d.label = d.places[0];
+    d.search = [d.name, ...d.places].join('|').toLowerCase();
+  }
 
   const THEMES = {
     rainforest: { label: 'Rainforest', bg: '#f4efe3', land: '#e2d9c5', visited: '#1f7a4d', stroke: '#fbf7ee', ink: '#17301f', muted: '#6b7a6e', accent: '#e0a526' },
@@ -53,7 +62,7 @@
     const list = $('stateList');
     list.innerHTML = '';
     for (const s of DATA.states) {
-      const items = DATA.districts.filter((d) => d.state === s.id);
+      const items = DATA.districts.filter((d) => d.state === s.id).sort((a, b) => a.label.localeCompare(b.label));
       const group = document.createElement('section');
       group.className = 'state-group';
       group.innerHTML = `
@@ -67,7 +76,13 @@
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'chip';
-        b.textContent = d.name;
+        b.textContent = d.label;
+        if (d.label !== d.name) {
+          const sub = document.createElement('small');
+          sub.textContent = d.name;
+          b.appendChild(sub);
+        }
+        b.title = d.places.join(', ');
         b.dataset.id = d.id;
         b.setAttribute('aria-pressed', 'false');
         b.addEventListener('click', () => toggle(d.id));
@@ -96,7 +111,7 @@
       const stateMatch = q && (g.state.en.toLowerCase().includes(q) || g.state.ms.toLowerCase().includes(q));
       let any = false;
       for (const d of g.items) {
-        const match = !q || stateMatch || d.name.toLowerCase().includes(q);
+        const match = !q || stateMatch || d.search.includes(q);
         chips.get(d.id).hidden = !match;
         any ||= match;
       }
@@ -143,7 +158,18 @@
       if (!id) { tip.hidden = true; return; }
       const d = DATA.districts.find((x) => x.id === id);
       const s = DATA.states.find((x) => x.id === d.state);
-      tip.innerHTML = `<b>${d.name}</b><span>${stateName(s)}</span>`;
+      tip.replaceChildren();
+      const title = document.createElement('b');
+      title.textContent = d.label;
+      const where = document.createElement('span');
+      where.textContent = (d.label !== d.name ? d.name + ', ' : '') + stateName(s);
+      tip.append(title, where);
+      const more = d.places.slice(1).filter((p) => p !== d.name && p.length > 3);
+      if (more.length) {
+        const also = document.createElement('span');
+        also.textContent = more.slice(0, 4).join(' · ');
+        tip.appendChild(also);
+      }
       const r = card.getBoundingClientRect();
       tip.style.left = e.clientX - r.left + 'px';
       tip.style.top = e.clientY - r.top + 'px';
@@ -160,7 +186,7 @@
       const txt = document.createElementNS(SVG_NS, 'text');
       txt.setAttribute('x', d.c[0]);
       txt.setAttribute('y', d.c[1]);
-      txt.textContent = d.name;
+      txt.textContent = d.label;
       labelLayer.appendChild(txt);
     }
   }
@@ -319,22 +345,37 @@
     for (const b of document.querySelectorAll('[data-lang]')) {
       b.addEventListener('click', () => { state.lang = b.dataset.lang; applyLang(); });
     }
+    const exportOpts = () => ({
+      data: DATA,
+      site: SITE_URL,
+      theme: THEMES[state.theme],
+      visited: state.visited,
+      labels: state.labels,
+      photo: state.photo,
+      texts: {
+        kicker: t('cardKicker'),
+        title: t('cardTitle'),
+        name: state.name ? t('exploredBy', { name: state.name }) : '',
+        summary: t('summary', { pct: fmtPct(state.visited.size) }),
+        states: t('statesDone', { n: statesVisited() }),
+        cta: t('makeYours'),
+      },
+    });
     for (const b of document.querySelectorAll('[data-export]')) {
-      b.addEventListener('click', () => window.exportMap(b.dataset.export, {
-        data: DATA,
-        theme: THEMES[state.theme],
-        visited: state.visited,
-        labels: state.labels,
-        photo: state.photo,
-        texts: {
-          kicker: t('cardKicker'),
-          title: t('cardTitle'),
-          name: state.name ? t('exploredBy', { name: state.name }) : '',
-          summary: t('summary', { pct: fmtPct(state.visited.size) }),
-          states: t('statesDone', { n: statesVisited() }),
-        },
-      }));
+      b.addEventListener('click', () => window.exportMap(b.dataset.export, exportOpts()));
     }
+    $('share').addEventListener('click', async () => {
+      const btn = $('share');
+      btn.disabled = true;
+      try {
+        const result = await window.shareMap(exportOpts(), t('shareText', { n: state.visited.size }));
+        if (result === 'copied') {
+          btn.textContent = t('linkCopied');
+          setTimeout(() => { btn.textContent = t('share'); }, 2000);
+        }
+      } catch { /* clipboard blocked */ }
+      btn.disabled = false;
+    });
 
     applyTheme();
     applyLang();

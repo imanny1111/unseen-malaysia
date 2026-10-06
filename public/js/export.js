@@ -93,9 +93,10 @@
         if (!visited.has(d.id)) continue;
         const x = ox + d.c[0] * s, y = oy + d.c[1] * s;
         ctx.lineWidth = 4; ctx.strokeStyle = th.bg;
-        ctx.strokeText(d.name, x, y);
+        const label = d.label || d.name;
+        ctx.strokeText(label, x, y);
         ctx.fillStyle = th.ink;
-        ctx.fillText(d.name, x, y);
+        ctx.fillText(label, x, y);
       }
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
@@ -123,6 +124,18 @@
     ctx.fillStyle = th.ink;
     ctx.font = `700 24px ${FONT}`;
     ctx.fillText('Unseen Malaysia', PAD + 54, 1153);
+
+    // Call to action so anyone who sees a shared map knows where to make one.
+    ctx.textAlign = 'right';
+    ctx.font = `800 26px ${FONT}`;
+    ctx.fillStyle = th.visited;
+    const site = o.site.replace(/^https?:\/\//, '');
+    ctx.fillText(site, W - PAD, 1153);
+    const sw = ctx.measureText(site).width;
+    ctx.font = `600 24px ${FONT}`;
+    ctx.fillStyle = th.muted;
+    ctx.fillText(texts.cta + '  ', W - PAD - sw, 1153);
+    ctx.textAlign = 'left';
     return c;
   }
 
@@ -180,6 +193,24 @@
     if (format === 'png') download(await toBlob(canvas, 'image/png'), name + '.png');
     else if (format === 'jpg') download(await toBlob(canvas, 'image/jpeg', 0.92), name + '.jpg');
     else download(await makePdf(canvas), name + '.pdf');
+  };
+
+  // Shares the map image via the device share sheet (mobile), falling back to
+  // sharing just the link, then to copying it. Returns 'shared' | 'copied' | 'cancelled'.
+  window.shareMap = async function (opts, text) {
+    const url = opts.site;
+    try {
+      if (navigator.share) {
+        const file = new File([await toBlob(await render(opts), 'image/png')], 'my-malaysia-map.png', { type: 'image/png' });
+        const withFile = { files: [file], text: text + ' ' + url };
+        await navigator.share(navigator.canShare && navigator.canShare(withFile) ? withFile : { text, url });
+        return 'shared';
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return 'cancelled';
+    }
+    await navigator.clipboard.writeText(text + ' ' + url);
+    return 'copied';
   };
   // Exposed for testing.
   window.renderMapCanvas = render;

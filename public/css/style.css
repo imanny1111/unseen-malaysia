@@ -223,3 +223,16 @@ button { cursor: pointer; }
 .visitors i { width: 8px; height: 8px; border-radius: 50%; background: #3ddc84; box-shadow: 0 0 0 0 rgba(61,220,132,.6); animation: pulse 2s infinite; }
 @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(61,220,132,0); } 100% { box-shadow: 0 0 0 0 rgba(61,220,132,0); } }
 @media (prefers-reduced-motion: reduce) { .visitors i { animation: none; } }
+
+/* Share + site address */
+.btn-share { background: var(--gold); color: #3a2a00; }
+.btn-share:hover { background: #ffd54f; }
+.btn-share:disabled { opacity: .7; cursor: progress; }
+.site-url { font-size: 13px; color: var(--muted); }
+.site-url b { color: var(--visited); }
+
+/* Chips show the known town with the official district underneath */
+.chip { line-height: 1.2; text-align: left; }
+.chip small { display: block; font-size: 10px; opacity: .6; font-weight: 500; }
+.chip.on small { opacity: .8; }
+.tooltip span + span { margin-top: 2px; font-style: italic; }
